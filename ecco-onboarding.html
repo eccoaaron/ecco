@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Welcome to Mars Men</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mars Men">
+<meta name="theme-color" content="#0D0D0B">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D0D0B; --bg2:#171715; --border:rgba(255,255,255,0.08); --text:#F2F0EB;
+  --muted:rgba(255,255,255,0.55); --faint:rgba(255,255,255,0.3);
+  --accent:#E8621A; --accent-dim:rgba(232,98,26,0.15); --accent-lt:rgba(232,98,26,0.06);
+  --green:#7BD18C; --red:#E8625C;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── Container & progress ─────────────────────── */
+.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
+.progress{height:2px;background:var(--border);position:sticky;top:0;z-index:100}
+.progress-fill{height:100%;background:var(--accent);transition:width 0.4s cubic-bezier(0.22,0.61,0.36,1);width:0%}
+.step-counter{padding:18px 24px 0;display:flex;justify-content:space-between;align-items:center}
+.step-counter-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--faint);text-transform:uppercase}
+.step-counter-skip{font-size:11px;color:var(--muted);cursor:pointer;font-weight:500;padding:6px 10px;border-radius:18px;transition:background 0.15s}
+.step-counter-skip:hover{background:rgba(255,255,255,0.04)}
+
+/* ── Step views ──────────────────────────────── */
+.step{display:none;padding:24px;flex:1;flex-direction:column}
+.step.active{display:flex;animation:slideIn 0.35s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.brand-mark{padding:8px 0 32px;text-align:center}
+.brand-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text)}
+.brand-sub{font-size:9px;font-weight:500;letter-spacing:0.18em;color:var(--faint);text-transform:uppercase;margin-top:6px}
+
+.step-eyebrow{font-size:10px;font-weight:600;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:12px}
+.step-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:36px;line-height:1.08;letter-spacing:-0.01em;color:var(--text);margin-bottom:12px}
+.step-title em{font-style:italic;color:var(--accent)}
+.step-sub{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:28px;font-weight:300}
+
+/* ── Form fields ─────────────────────────────── */
+.field{margin-bottom:18px}
+.field-label{font-size:11px;font-weight:600;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block}
+.field-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border-color 0.15s}
+.field-input:focus{border-color:var(--accent)}
+.field-input::placeholder{color:var(--faint)}
+.field-helper{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5;font-weight:300}
+
+/* ── Consent boxes ───────────────────────────── */
+.consent-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:14px;display:flex;gap:14px;cursor:pointer;transition:border-color 0.15s}
+.consent-box:hover{border-color:var(--faint)}
+.consent-box.checked{border-color:var(--accent);background:var(--accent-lt)}
+.consent-check{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--faint);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.consent-box.checked .consent-check{background:var(--accent);border-color:var(--accent)}
+.consent-box.checked .consent-check::after{content:'';width:6px;height:11px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-1px)}
+.consent-body{flex:1;font-size:13px;line-height:1.55;color:var(--text);font-weight:400}
+.consent-body strong{font-weight:600}
+.consent-body a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;font-weight:500}
+.consent-detail{font-size:11px;color:var(--muted);font-weight:300;line-height:1.55;margin-top:6px}
+
+.trust-card{background:linear-gradient(135deg,var(--accent-lt),rgba(232,98,26,0.02));border:1px solid var(--accent-dim);border-radius:12px;padding:18px 20px;margin-bottom:24px;display:flex;align-items:flex-start;gap:14px}
+.trust-card-icon{width:32px;height:32px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent)}
+.trust-card-body{flex:1}
+.trust-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;letter-spacing:-0.01em}
+.trust-card-sub{font-size:12px;color:var(--muted);line-height:1.6;font-weight:300}
+
+/* ── Bottom button bar ────────────────────────── */
+.btn-bar{padding:18px 24px 32px;background:linear-gradient(to top,var(--bg) 50%,transparent);position:sticky;bottom:0}
+.btn{width:100%;background:var(--accent);color:white;border:none;border-radius:24px;padding:16px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.04em;cursor:pointer;transition:opacity 0.15s,transform 0.1s}
+.btn:active:not(:disabled){transform:scale(0.98)}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);margin-top:8px}
+.btn-back{position:absolute;top:14px;left:14px;background:transparent;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:8px 12px;border-radius:18px;display:none;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-weight:500}
+.btn-back:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.btn-back.show{display:flex}
+
+/* ── Photo capture step ──────────────────────── */
+.photo-frame{aspect-ratio:3/4;background:#000;border-radius:14px;position:relative;margin-bottom:18px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.photo-frame-guide{position:absolute;inset:24px;border:1.5px dashed rgba(232,98,26,0.55);border-radius:18px;pointer-events:none}
+.photo-frame-corner{position:absolute;width:18px;height:18px;border-color:var(--accent);border-style:solid;opacity:0.9}
+.photo-frame-corner.tl{top:0;left:0;border-width:2px 0 0 2px;border-radius:6px 0 0 0}
+.photo-frame-corner.tr{top:0;right:0;border-width:2px 2px 0 0;border-radius:0 6px 0 0}
+.photo-frame-corner.bl{bottom:0;left:0;border-width:0 0 2px 2px;border-radius:0 0 0 6px}
+.photo-frame-corner.br{bottom:0;right:0;border-width:0 2px 2px 0;border-radius:0 0 6px 0}
+.photo-placeholder{text-align:center;color:rgba(255,255,255,0.4);padding:24px}
+.photo-placeholder-icon{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:36px;color:rgba(255,255,255,0.3);margin-bottom:6px}
+.photo-placeholder-text{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.photo-day-label{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-family:'Cormorant Garamond',serif;font-weight:400;font-style:italic;font-size:18px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.4);padding:4px 14px;border-radius:18px;backdrop-filter:blur(8px)}
+.photo-actions{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0 4px}
+.shutter{width:62px;height:62px;border-radius:50%;border:3px solid white;background:rgba(255,255,255,0.06);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s}
+.shutter:active{transform:scale(0.94)}
+.shutter-inner{width:48px;height:48px;border-radius:50%;background:white}
+.shutter-label{font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--faint)}
+
+/* ── Welcome animation ───────────────────────── */
+.welcome-icon{width:80px;height:80px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:pulseRing 2s ease-in-out infinite}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 var(--accent-dim)}50%{box-shadow:0 0 0 14px transparent}}
+
+/* ── Success step ────────────────────────────── */
+.success-check{width:72px;height:72px;border-radius:50%;background:#3A8C4A;display:flex;align-items:center;justify-content:center;margin:24px auto;animation:popIn 0.5s cubic-bezier(0.18,0.89,0.32,1.28)}
+@keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.success-check::after{content:'';width:18px;height:32px;border:solid white;border-width:0 4px 4px 0;transform:rotate(45deg) translateY(-2px)}
+
+/* Legal text */
+.legal-text{font-size:11px;color:var(--faint);line-height:1.7;font-weight:300;margin-top:14px;text-align:center}
+.legal-text a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+
+/* Mini receipt */
+.receipt{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-top:18px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7}
+.receipt-label{color:var(--faint);font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:8px}
+.receipt-row{display:flex;justify-content:space-between;gap:12px}
+.receipt-row strong{color:var(--text);font-weight:400}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="progress"><div class="progress-fill" id="progFill"></div></div>
+  <button class="btn-back" id="backBtn" onclick="prevStep()">← Back</button>
+  <div class="step-counter">
+    <div class="step-counter-label" id="stepLabel">Step 1 of 6</div>
+    <div class="step-counter-skip" onclick="confirmExit()">Exit</div>
+  </div>
+
+  <!-- STEP 1: WELCOME -->
+  <div class="step active" id="step-1">
+    <div class="brand-mark"><div class="brand-name">Mars Men</div><div class="brand-sub">Powered by Ecco</div></div>
+    <div class="welcome-icon">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="14" stroke="#E8621A" stroke-width="1.5"/>
+        <path d="M18 10v8l5 3" stroke="#E8621A" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="step-eyebrow">Welcome</div>
+    <div class="step-title">Your <em>90-day</em><br>progress program.</div>
+    <div class="step-sub">We'll guide you through Mars Men — a daily check-in, milestone photos, and rewards when you hit Day 30, Day 60, and Day 90. It takes about 4 minutes to set up.</div>
+
+    <div class="trust-card">
+      <div class="trust-card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7 3.5-0.5 6-3.5 6-7V4l-6-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="trust-card-body">
+        <div class="trust-card-title">Your photos stay yours</div>
+        <div class="trust-card-sub">Mars Men can only use a photo with your separate approval — never automatic. You can delete anything, anytime.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: PROFILE -->
+  <div class="step" id="step-2">
+    <div class="step-eyebrow">About you</div>
+    <div class="step-title">A few <em>quick</em><br>details.</div>
+    <div class="step-sub">Just enough to set up your account and personalize the experience.</div>
+
+    <div class="field">
+      <label class="field-label">First name</label>
+      <input class="field-input" id="userFirstName" placeholder="James" autocomplete="given-name">
+    </div>
+    <div class="field">
+      <label class="field-label">Email</label>
+      <input class="field-input" id="userEmail" type="email" placeholder="james@example.com" autocomplete="email">
+      <div class="field-helper">We'll send your milestone rewards here and nothing else without permission.</div>
+    </div>
+    <div class="field">
+      <label class="field-label">Age verification</label>
+      <select class="field-input" id="userAge">
+        <option value="">Select your age range</option>
+        <option value="18-24">18–24</option>
+        <option value="25-34">25–34</option>
+        <option value="35-44">35–44</option>
+        <option value="45-54">45–54</option>
+        <option value="55+">55+</option>
+        <option value="under-18">Under 18</option>
+      </select>
+      <div class="field-helper">Ecco is for adults 18+. Under-18 accounts cannot be created.</div>
+    </div>
+    <div class="field">
+      <label class="field-label">State (for state-specific privacy rights)</label>
+      <select class="field-input" id="userState">
+        <option value="">Select your state</option>
+        <option value="IL">Illinois</option>
+        <option value="CA">California</option>
+        <option value="TX">Texas</option>
+        <option value="WA">Washington</option>
+        <option value="NY">New York</option>
+        <option value="other">Other US state</option>
+        <option value="non-us">Outside the US</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- STEP 3: HOW IT WORKS -->
+  <div class="step" id="step-3">
+    <div class="step-eyebrow">How it works</div>
+    <div class="step-title">Three <em>simple</em><br>habits, daily.</div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;margin-top:8px">
+      <div style="display:flex;gap:16px">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;font-weight:500;flex-shrink:0">01</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;letter-spacing:-0.01em">Take your Mars Men daily</div>
+          <div style="font-size:13px;color:var(--muted);font-weight:300;line-height:1.6">A gentle reminder shows up when you usually take it. Tap to mark complete. That's your daily check-in.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;font-weight:500;flex-shrink:0">02</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;letter-spacing:-0.01em">Photo at four milestone days</div>
+          <div style="font-size:13px;color:var(--muted);font-weight:300;line-height:1.6">Day 1, Day 30, Day 60, Day 90. That's it. Four photos in 90 days — not daily. Frame guide built in.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;font-weight:500;flex-shrink:0">03</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;letter-spacing:-0.01em">Earn rewards as you go</div>
+          <div style="font-size:13px;color:var(--muted);font-weight:300;line-height:1.6">Day 30: 25% off. Day 60: Pro formula upgrade. Day 90: Next month free + featured customer status.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trust-card" style="margin-top:24px">
+      <div class="trust-card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v6M8 9.5v0.1M8 14a6 6 0 100-12 6 6 0 000 12z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="trust-card-body">
+        <div class="trust-card-title">Streaks are optional</div>
+        <div class="trust-card-sub">Some people find daily streaks motivating, others find them stressful. We default to <strong>off</strong> — turn them on in Settings if they help you.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONSENT (CLICKWRAP) -->
+  <div class="step" id="step-4">
+    <div class="step-eyebrow">Your consent</div>
+    <div class="step-title">Two <em>specific</em><br>things to agree to.</div>
+    <div class="step-sub">We separate these because they're different commitments. You can accept one without the other, but both are needed to use the platform.</div>
+
+    <div class="consent-box" id="consent1" onclick="toggleConsent('consent1','agreeTos')">
+      <div class="consent-check"></div>
+      <div class="consent-body">
+        <strong>I have read and agree to the User Terms and Privacy Policy.</strong>
+        <div class="consent-detail">Covers how Mars Men and Ecco handle your account, content rights, cancellation, and the general terms of using the platform. <a href="https://eccoapp.ai/terms" target="_blank" onclick="event.stopPropagation()">Read User Terms</a> · <a href="https://eccoapp.ai/privacy" target="_blank" onclick="event.stopPropagation()">Read Privacy Policy</a></div>
+      </div>
+    </div>
+
+    <div class="consent-box" id="consent2" onclick="toggleConsent('consent2','agreeBiometric')">
+      <div class="consent-check"></div>
+      <div class="consent-body">
+        <strong>I consent to on-device photo validation.</strong>
+        <div class="consent-detail">When you take a milestone photo, your phone (not our servers) checks that the photo matches the frame template. The validation analysis is discarded immediately — never stored, never transmitted, never seen by anyone. Required by Illinois law for residents; we ask everyone to keep things consistent. <a href="https://eccoapp.ai/privacy#biometric" target="_blank" onclick="event.stopPropagation()">Section 12 details</a></div>
+      </div>
+    </div>
+
+    <div class="trust-card">
+      <div class="trust-card-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="6" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 6V4a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.5"/></svg>
+      </div>
+      <div class="trust-card-body">
+        <div class="trust-card-title">What we log when you accept</div>
+        <div class="trust-card-sub">Your email, IP address, the time you clicked, and which versions of these documents you agreed to. This is how we prove you saw what you accepted — a legal requirement.</div>
+      </div>
+    </div>
+
+    <div class="legal-text">By continuing you confirm you are at least 18 years old and are creating a personal account, not on behalf of another person.</div>
+  </div>
+
+  <!-- STEP 5: DAY 1 PHOTO -->
+  <div class="step" id="step-5">
+    <div class="step-eyebrow">Day 1 baseline</div>
+    <div class="step-title">Your <em>before</em><br>photo.</div>
+    <div class="step-sub">This is the starting point — what you'll compare against at Day 30, 60, and 90. Stand 4 feet back, good lighting, the frame guide will help.</div>
+
+    <div class="photo-frame">
+      <div class="photo-day-label">Day 1</div>
+      <div class="photo-frame-guide">
+        <div class="photo-frame-corner tl"></div>
+        <div class="photo-frame-corner tr"></div>
+        <div class="photo-frame-corner bl"></div>
+        <div class="photo-frame-corner br"></div>
+      </div>
+      <div class="photo-placeholder">
+        <div class="photo-placeholder-icon">camera ready</div>
+        <div class="photo-placeholder-text">Tap shutter when in frame</div>
+      </div>
+    </div>
+
+    <div class="photo-actions">
+      <div class="shutter" onclick="capturePhoto()"><div class="shutter-inner"></div></div>
+      <div class="shutter-label">Tap · 3-second timer</div>
+    </div>
+
+    <div class="legal-text">Photo stays private to you. You'll review and approve before Mars Men can use it for anything.</div>
+  </div>
+
+  <!-- STEP 6: COMPLETE -->
+  <div class="step" id="step-6">
+    <div class="success-check"></div>
+    <div class="step-eyebrow" style="text-align:center">You're in</div>
+    <div class="step-title" style="text-align:center">Day 1 <em>complete</em>.<br>Let's go to Mars.</div>
+    <div class="step-sub" style="text-align:center">Your 90-day program starts now. Daily reminders are set for the time of day you usually take Mars Men.</div>
+
+    <div class="receipt">
+      <div class="receipt-label">Acceptance receipt</div>
+      <div class="receipt-row"><span>Account</span><strong id="receiptEmail">james@example.com</strong></div>
+      <div class="receipt-row"><span>Accepted at</span><strong id="receiptTime">Jun 11, 2026 · 14:32 CST</strong></div>
+      <div class="receipt-row"><span>User Terms version</span><strong>v2.1.0</strong></div>
+      <div class="receipt-row"><span>Privacy Policy version</span><strong>v2.1.0</strong></div>
+      <div class="receipt-row"><span>Biometric consent</span><strong>Granted</strong></div>
+      <div class="receipt-row"><span>Receipt ID</span><strong id="receiptId">EC-2026-0611-A3F2</strong></div>
+    </div>
+
+    <div class="legal-text" style="margin-top:18px">A copy of this receipt has been sent to <span id="receiptEmailInline">your email</span>. Keep it for your records.</div>
+  </div>
+
+  <!-- Action button bar -->
+  <div class="btn-bar">
+    <button class="btn" id="primaryBtn" onclick="nextStep()">Begin</button>
+  </div>
+</div>
+
+<script>
+const TOTAL_STEPS = 6;
+const DOCS_VERSION = 'v2.1.0';
+const LOG_KEY = 'ecco_acceptance_log';
+let currentStep = 1;
+let consents = { agreeTos: false, agreeBiometric: false };
+
+function updateUI() {
+  // Show current step
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + currentStep).classList.add('active');
+  // Progress bar
+  document.getElementById('progFill').style.width = Math.round((currentStep / TOTAL_STEPS) * 100) + '%';
+  // Step counter
+  document.getElementById('stepLabel').textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
+  // Back button visibility
+  document.getElementById('backBtn').classList.toggle('show', currentStep > 1 && currentStep < TOTAL_STEPS);
+
+  // Button label per step
+  const btn = document.getElementById('primaryBtn');
+  if (currentStep === 1) btn.textContent = 'Begin';
+  else if (currentStep === 2) btn.textContent = 'Continue';
+  else if (currentStep === 3) btn.textContent = 'Got it';
+  else if (currentStep === 4) btn.textContent = 'Accept and continue';
+  else if (currentStep === 5) btn.textContent = 'Continue to home →';
+  else if (currentStep === 6) btn.textContent = 'Open Mars Men';
+
+  validateCurrentStep();
+  window.scrollTo(0, 0);
+}
+
+function validateCurrentStep() {
+  const btn = document.getElementById('primaryBtn');
+  btn.disabled = false;
+
+  if (currentStep === 2) {
+    const name = document.getElementById('userFirstName').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const age = document.getElementById('userAge').value;
+    const state = document.getElementById('userState').value;
+    const validEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+
+    if (age === 'under-18') {
+      btn.textContent = 'Cannot create account';
+      btn.disabled = true;
+      return;
+    }
+
+    if (!name || !validEmail || !age || !state) {
+      btn.disabled = true;
+    }
+  } else if (currentStep === 4) {
+    if (!consents.agreeTos || !consents.agreeBiometric) {
+      btn.disabled = true;
+    }
+  }
+}
+
+['userFirstName','userEmail','userAge','userState'].forEach(id => {
+  document.getElementById(id).addEventListener('input', validateCurrentStep);
+  document.getElementById(id).addEventListener('change', validateCurrentStep);
+});
+
+function toggleConsent(boxId, key) {
+  consents[key] = !consents[key];
+  document.getElementById(boxId).classList.toggle('checked', consents[key]);
+  validateCurrentStep();
+}
+
+function nextStep() {
+  // Special handling at step 4: log the acceptance
+  if (currentStep === 4) {
+    logAcceptance();
+  }
+  // Special handling at step 6: open the main app
+  if (currentStep === TOTAL_STEPS) {
+    window.location.href = '/'; // would navigate to the main app in production
+    return;
+  }
+  currentStep++;
+  updateUI();
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    updateUI();
+  }
+}
+
+function capturePhoto() {
+  // In production, this triggers the actual camera. For onboarding, we simulate.
+  const ph = document.querySelector('#step-5 .photo-placeholder');
+  if (ph) {
+    ph.innerHTML = '<div class="photo-placeholder-icon" style="color:var(--accent)">captured</div><div class="photo-placeholder-text" style="color:var(--accent)">Day 1 baseline saved</div>';
+  }
+  document.querySelector('.shutter').style.opacity = '0.4';
+  document.querySelector('.shutter').style.pointerEvents = 'none';
+}
+
+function logAcceptance() {
+  // Build the acceptance receipt — in production this POSTs to a server endpoint.
+  const now = new Date();
+  const receiptId = 'EC-' + now.getFullYear() + '-' +
+                    String(now.getMonth()+1).padStart(2,'0') +
+                    String(now.getDate()).padStart(2,'0') + '-' +
+                    Math.random().toString(36).substr(2, 4).toUpperCase();
+
+  const record = {
+    receiptId,
+    timestamp: now.toISOString(),
+    email: document.getElementById('userEmail').value.trim(),
+    firstName: document.getElementById('userFirstName').value.trim(),
+    state: document.getElementById('userState').value,
+    ageRange: document.getElementById('userAge').value,
+    consents: {
+      tos: { granted: consents.agreeTos, version: DOCS_VERSION, document: 'User Terms & UGC License' },
+      privacy: { granted: consents.agreeTos, version: DOCS_VERSION, document: 'Privacy Policy' },
+      biometric: { granted: consents.agreeBiometric, version: DOCS_VERSION, document: 'BIPA Section 12' }
+    },
+    userAgent: navigator.userAgent,
+    pageUrl: window.location.href,
+    // IP address would come from the server in production
+  };
+
+  // Save locally so it survives reload — in production this is server-side
+  try {
+    const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+    log.push(record);
+    localStorage.setItem(LOG_KEY, JSON.stringify(log));
+  } catch(e) {}
+
+  // Pipe to server endpoint
+  // In production: fetch('/api/acceptance', { method:'POST', body: JSON.stringify(record) })
+
+  // Render receipt on step 6
+  document.getElementById('receiptEmail').textContent = record.email;
+  document.getElementById('receiptEmailInline').textContent = record.email;
+  document.getElementById('receiptTime').textContent = now.toLocaleString('en-US', {
+    month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit', timeZoneName:'short'
+  });
+  document.getElementById('receiptId').textContent = receiptId;
+}
+
+function confirmExit() {
+  if (currentStep <= 1 || confirm('Exit setup? You\'ll need to start over.')) {
+    window.location.href = 'https://mengotomars.com';
+  }
+}
+
+updateUI();
+</script>
+</body>
+</html>
