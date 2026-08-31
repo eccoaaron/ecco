@@ -23,9 +23,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
 .progress{height:2px;background:var(--border);position:sticky;top:0;z-index:100}
 .progress-fill{height:100%;background:var(--accent);transition:width 0.4s cubic-bezier(0.22,0.61,0.36,1);width:0%}
-.step-counter{padding:18px 24px 0;display:flex;justify-content:space-between;align-items:center}
-.step-counter-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--faint);text-transform:uppercase}
-.step-counter-skip{font-size:11px;color:var(--muted);cursor:pointer;font-weight:500;padding:6px 10px;border-radius:18px;transition:background 0.15s}
+.step-counter{padding:18px 24px 0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.step-counter-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--faint);text-transform:uppercase;text-align:center}
+.step-counter-skip{justify-self:end;font-size:11px;color:var(--muted);cursor:pointer;font-weight:500;padding:6px 10px;border-radius:18px;transition:background 0.15s}
 .step-counter-skip:hover{background:rgba(255,255,255,0.04)}
 
 /* ── Step views ──────────────────────────────── */
@@ -74,27 +74,44 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn:active:not(:disabled){transform:scale(0.98)}
 .btn:disabled{opacity:0.35;cursor:not-allowed}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);margin-top:8px}
-.btn-back{position:absolute;top:14px;left:14px;background:transparent;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:8px 12px;border-radius:18px;display:none;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-weight:500}
+.btn-back{position:absolute;top:14px;left:14px;background:transparent;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:8px 12px;border-radius:18px;display:none;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-weight:500;z-index:10}
 .btn-back:hover{background:rgba(255,255,255,0.04);color:var(--text)}
 .btn-back.show{display:flex}
 
 /* ── Photo capture step ──────────────────────── */
 .photo-frame{aspect-ratio:3/4;background:#000;border-radius:14px;position:relative;margin-bottom:18px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.photo-frame-guide{position:absolute;inset:24px;border:1.5px dashed rgba(232,98,26,0.55);border-radius:18px;pointer-events:none}
+.cam-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;display:block}
+.cam-countdown{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:140px;color:rgba(255,255,255,0.95);text-shadow:0 4px 32px rgba(0,0,0,0.6);pointer-events:none;z-index:4}
+.cam-countdown.show{display:flex;animation:countdownPulse 1s ease-out infinite}
+@keyframes countdownPulse{0%{transform:scale(1);opacity:1}100%{transform:scale(1.15);opacity:0.7}}
+.cam-flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;z-index:5;border-radius:14px}
+.cam-flash.flash{animation:camFlash 0.32s ease-out}
+@keyframes camFlash{0%{opacity:0}18%{opacity:0.95}100%{opacity:0}}
+.photo-frame-guide{position:absolute;inset:24px;border:1.5px dashed rgba(232,98,26,0.55);border-radius:18px;pointer-events:none;z-index:2}
 .photo-frame-corner{position:absolute;width:18px;height:18px;border-color:var(--accent);border-style:solid;opacity:0.9}
 .photo-frame-corner.tl{top:0;left:0;border-width:2px 0 0 2px;border-radius:6px 0 0 0}
 .photo-frame-corner.tr{top:0;right:0;border-width:2px 2px 0 0;border-radius:0 6px 0 0}
 .photo-frame-corner.bl{bottom:0;left:0;border-width:0 0 2px 2px;border-radius:0 0 0 6px}
 .photo-frame-corner.br{bottom:0;right:0;border-width:0 2px 2px 0;border-radius:0 0 6px 0}
-.photo-placeholder{text-align:center;color:rgba(255,255,255,0.4);padding:24px}
+.photo-placeholder{text-align:center;color:rgba(255,255,255,0.4);padding:24px;position:relative;z-index:1}
 .photo-placeholder-icon{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:36px;color:rgba(255,255,255,0.3);margin-bottom:6px}
 .photo-placeholder-text{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
-.photo-day-label{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-family:'Cormorant Garamond',serif;font-weight:400;font-style:italic;font-size:18px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.4);padding:4px 14px;border-radius:18px;backdrop-filter:blur(8px)}
+.photo-day-label{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-family:'Cormorant Garamond',serif;font-weight:400;font-style:italic;font-size:18px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.4);padding:4px 14px;border-radius:18px;backdrop-filter:blur(8px);z-index:3}
 .photo-actions{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0 4px}
-.shutter{width:62px;height:62px;border-radius:50%;border:3px solid white;background:rgba(255,255,255,0.06);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s}
+.shutter{width:62px;height:62px;border-radius:50%;border:3px solid white;background:rgba(255,255,255,0.06);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s,opacity 0.15s}
 .shutter:active{transform:scale(0.94)}
 .shutter-inner{width:48px;height:48px;border-radius:50%;background:white}
 .shutter-label{font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--faint)}
+.photo-review{display:none;gap:10px;padding:8px 0 4px}
+.photo-review.show{display:flex}
+.photo-review-btn{flex:1;padding:14px;border-radius:24px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.04em;cursor:pointer;border:none;transition:opacity 0.15s,transform 0.1s}
+.photo-review-btn:active{transform:scale(0.98)}
+.photo-review-btn.retake{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.photo-review-btn.retake:hover{color:var(--text);border-color:var(--faint)}
+.photo-review-btn.confirm{background:var(--accent);color:white}
+.photo-review-btn.confirm:hover{opacity:0.92}
+.cam-skip-link{display:none;text-align:center;font-size:12px;color:var(--muted);margin-top:14px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.cam-skip-link.show{display:block}
 
 /* ── Welcome animation ───────────────────────── */
 .welcome-icon{width:80px;height:80px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:pulseRing 2s ease-in-out infinite}
@@ -122,6 +139,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="progress"><div class="progress-fill" id="progFill"></div></div>
   <button class="btn-back" id="backBtn" onclick="prevStep()">← Back</button>
   <div class="step-counter">
+    <div></div>
     <div class="step-counter-label" id="stepLabel">Step 1 of 6</div>
     <div class="step-counter-skip" onclick="confirmExit()">Exit</div>
   </div>
@@ -275,6 +293,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="step-sub">This is the starting point — what you'll compare against at Day 30, 60, and 90. Stand 4 feet back, good lighting, the frame guide will help.</div>
 
     <div class="photo-frame">
+      <video id="camVideo" class="cam-media" playsinline muted autoplay style="display:none"></video>
+      <img id="camPreview" class="cam-media" alt="Your Day 1 photo" style="display:none">
+      <canvas id="camCanvas" style="display:none"></canvas>
+      <div class="cam-countdown" id="camCountdown"></div>
+      <div class="cam-flash" id="camFlash"></div>
       <div class="photo-day-label">Day 1</div>
       <div class="photo-frame-guide">
         <div class="photo-frame-corner tl"></div>
@@ -282,16 +305,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <div class="photo-frame-corner bl"></div>
         <div class="photo-frame-corner br"></div>
       </div>
-      <div class="photo-placeholder">
-        <div class="photo-placeholder-icon">camera ready</div>
-        <div class="photo-placeholder-text">Tap shutter when in frame</div>
+      <div class="photo-placeholder" id="camPlaceholder">
+        <div class="photo-placeholder-icon" id="camPlaceholderIcon">camera</div>
+        <div class="photo-placeholder-text" id="camPlaceholderText">Preparing…</div>
       </div>
     </div>
 
-    <div class="photo-actions">
-      <div class="shutter" onclick="capturePhoto()"><div class="shutter-inner"></div></div>
+    <div class="photo-actions" id="camActions">
+      <div class="shutter" id="shutterBtn" onclick="capturePhoto()"><div class="shutter-inner"></div></div>
       <div class="shutter-label">Tap · 3-second timer</div>
     </div>
+
+    <div class="photo-review" id="camReview">
+      <button class="photo-review-btn retake" onclick="retakePhoto()">↺ Retake</button>
+      <button class="photo-review-btn confirm" onclick="confirmPhoto()">Looks good ✓</button>
+    </div>
+
+    <div class="cam-skip-link" id="camSkip" onclick="skipPhoto()">Skip — I'll take my Day 1 photo later</div>
 
     <div class="legal-text">Photo stays private to you. You'll review and approve before Mars Men can use it for anything.</div>
   </div>
@@ -329,6 +359,13 @@ const LOG_KEY = 'ecco_acceptance_log';
 let currentStep = 1;
 let consents = { agreeTos: false, agreeBiometric: false };
 
+// Camera + step 5 state
+let cameraStream = null;
+let step5PhotoDone = false;    // true once user has confirmed a photo OR chosen to skip
+let countdownActive = false;   // prevents double-tap on shutter
+window.capturedPhotos = window.capturedPhotos || {};  // in-memory store; swap for Supabase upload when backend is live
+window._pendingCapture = null; // holds the captured dataURL until user taps Looks good / Retake
+
 function updateUI() {
   // Show current step
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -348,6 +385,13 @@ function updateUI() {
   else if (currentStep === 4) btn.textContent = 'Accept and continue';
   else if (currentStep === 5) btn.textContent = 'Continue to home →';
   else if (currentStep === 6) btn.textContent = 'Open Mars Men';
+
+  // Camera lifecycle — start on entry to step 5, stop on any other step
+  if (currentStep === 5) {
+    startCamera();
+  } else {
+    stopCamera();
+  }
 
   validateCurrentStep();
   window.scrollTo(0, 0);
@@ -375,6 +419,10 @@ function validateCurrentStep() {
     }
   } else if (currentStep === 4) {
     if (!consents.agreeTos || !consents.agreeBiometric) {
+      btn.disabled = true;
+    }
+  } else if (currentStep === 5) {
+    if (!step5PhotoDone) {
       btn.disabled = true;
     }
   }
@@ -412,18 +460,198 @@ function prevStep() {
   }
 }
 
-function capturePhoto() {
-  // In production, this triggers the actual camera. For onboarding, we simulate.
-  const ph = document.querySelector('#step-5 .photo-placeholder');
-  if (ph) {
-    ph.innerHTML = '<div class="photo-placeholder-icon" style="color:var(--accent)">captured</div><div class="photo-placeholder-text" style="color:var(--accent)">Day 1 baseline saved</div>';
+// ─── CAMERA ─────────────────────────────────────────────────────────
+async function startCamera() {
+  const video = document.getElementById('camVideo');
+  const preview = document.getElementById('camPreview');
+  const placeholder = document.getElementById('camPlaceholder');
+  const placeholderText = document.getElementById('camPlaceholderText');
+  const placeholderIcon = document.getElementById('camPlaceholderIcon');
+  const actions = document.getElementById('camActions');
+  const review = document.getElementById('camReview');
+  const skip = document.getElementById('camSkip');
+  const shutterBtn = document.getElementById('shutterBtn');
+
+  // Reset step 5 state on every entry
+  step5PhotoDone = false;
+  countdownActive = false;
+  window._pendingCapture = null;
+  preview.style.display = 'none';
+  preview.src = '';
+  review.classList.remove('show');
+  actions.style.display = 'flex';
+  skip.classList.remove('show');
+  shutterBtn.style.opacity = '';
+  shutterBtn.style.pointerEvents = '';
+
+  // If a live stream is still around (shouldn't be, since stopCamera clears it), reuse
+  if (cameraStream && cameraStream.active) {
+    video.srcObject = cameraStream;
+    video.style.display = 'block';
+    placeholder.style.display = 'none';
+    return;
   }
-  document.querySelector('.shutter').style.opacity = '0.4';
-  document.querySelector('.shutter').style.pointerEvents = 'none';
+
+  // Show placeholder while we request permission
+  placeholder.style.display = 'block';
+  placeholderIcon.textContent = 'camera';
+  placeholderText.textContent = 'Requesting camera…';
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    handleCameraError(new Error('getUserMedia not supported'));
+    return;
+  }
+
+  try {
+    let stream;
+    try {
+      // Prefer back camera on mobile — user props phone up and steps back for a torso shot
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false
+      });
+    } catch (e) {
+      // Fall back to whatever camera is available (desktop webcam, front-only devices)
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+    cameraStream = stream;
+    video.srcObject = stream;
+    video.style.display = 'block';
+    placeholder.style.display = 'none';
+  } catch (err) {
+    handleCameraError(err);
+  }
 }
 
+function handleCameraError(err) {
+  console.warn('Camera error:', err);
+  const placeholderIcon = document.getElementById('camPlaceholderIcon');
+  const placeholderText = document.getElementById('camPlaceholderText');
+  const actions = document.getElementById('camActions');
+  const skip = document.getElementById('camSkip');
+
+  placeholderIcon.textContent = 'no camera';
+  if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+    placeholderText.textContent = 'Camera permission denied';
+  } else if (err && (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError')) {
+    placeholderText.textContent = 'No camera found on this device';
+  } else {
+    placeholderText.textContent = 'Camera unavailable';
+  }
+  actions.style.display = 'none';
+  skip.classList.add('show');
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  const video = document.getElementById('camVideo');
+  if (video) video.srcObject = null;
+}
+
+function capturePhoto() {
+  if (countdownActive) return;
+  if (!cameraStream) return;
+  countdownActive = true;
+
+  const countdown = document.getElementById('camCountdown');
+  const shutterBtn = document.getElementById('shutterBtn');
+  shutterBtn.style.opacity = '0.4';
+  shutterBtn.style.pointerEvents = 'none';
+
+  let n = 3;
+  countdown.textContent = n;
+  countdown.classList.add('show');
+
+  const tick = setInterval(() => {
+    n--;
+    if (n > 0) {
+      countdown.textContent = n;
+    } else {
+      clearInterval(tick);
+      countdown.classList.remove('show');
+      doCapture();
+    }
+  }, 1000);
+}
+
+function doCapture() {
+  const video = document.getElementById('camVideo');
+  const canvas = document.getElementById('camCanvas');
+  const preview = document.getElementById('camPreview');
+  const flash = document.getElementById('camFlash');
+  const actions = document.getElementById('camActions');
+  const review = document.getElementById('camReview');
+
+  // White flash
+  flash.classList.remove('flash');
+  void flash.offsetWidth; // force reflow to restart animation
+  flash.classList.add('flash');
+
+  // Draw the current video frame to a canvas at native resolution
+  canvas.width = video.videoWidth || 720;
+  canvas.height = video.videoHeight || 960;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  preview.src = dataUrl;
+  preview.style.display = 'block';
+  video.style.display = 'none';
+
+  actions.style.display = 'none';
+  review.classList.add('show');
+  countdownActive = false;
+
+  window._pendingCapture = dataUrl;
+}
+
+function retakePhoto() {
+  const video = document.getElementById('camVideo');
+  const preview = document.getElementById('camPreview');
+  const actions = document.getElementById('camActions');
+  const review = document.getElementById('camReview');
+  const shutterBtn = document.getElementById('shutterBtn');
+
+  preview.style.display = 'none';
+  preview.src = '';
+  video.style.display = 'block';
+  actions.style.display = 'flex';
+  review.classList.remove('show');
+  shutterBtn.style.opacity = '';
+  shutterBtn.style.pointerEvents = '';
+  window._pendingCapture = null;
+}
+
+function confirmPhoto() {
+  if (!window._pendingCapture) return;
+  // In-memory storage — swap for a Supabase/backend upload call once backend is live
+  window.capturedPhotos.day1 = {
+    dataUrl: window._pendingCapture,
+    timestamp: new Date().toISOString()
+  };
+  window._pendingCapture = null;
+  step5PhotoDone = true;
+  stopCamera();
+  nextStep(); // auto-advance to step 6
+}
+
+function skipPhoto() {
+  step5PhotoDone = true;
+  stopCamera();
+  document.getElementById('camPlaceholderIcon').textContent = 'skipped';
+  document.getElementById('camPlaceholderText').textContent = 'You can take your Day 1 photo from the main app';
+  document.getElementById('camPlaceholder').style.display = 'block';
+  document.getElementById('camSkip').classList.remove('show');
+  document.getElementById('camActions').style.display = 'none';
+  validateCurrentStep();
+  document.getElementById('primaryBtn').textContent = 'Continue without photo →';
+}
+
+// ─── ACCEPTANCE LOG ─────────────────────────────────────────────────
 function logAcceptance() {
-  // Build the acceptance receipt — in production this POSTs to a server endpoint.
   const now = new Date();
   const receiptId = 'EC-' + now.getFullYear() + '-' +
                     String(now.getMonth()+1).padStart(2,'0') +
@@ -444,20 +672,16 @@ function logAcceptance() {
     },
     userAgent: navigator.userAgent,
     pageUrl: window.location.href,
-    // IP address would come from the server in production
   };
 
-  // Save locally so it survives reload — in production this is server-side
   try {
     const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
     log.push(record);
     localStorage.setItem(LOG_KEY, JSON.stringify(log));
   } catch(e) {}
 
-  // Pipe to server endpoint
   // In production: fetch('/api/acceptance', { method:'POST', body: JSON.stringify(record) })
 
-  // Render receipt on step 6
   document.getElementById('receiptEmail').textContent = record.email;
   document.getElementById('receiptEmailInline').textContent = record.email;
   document.getElementById('receiptTime').textContent = now.toLocaleString('en-US', {
@@ -468,9 +692,17 @@ function logAcceptance() {
 
 function confirmExit() {
   if (currentStep <= 1 || confirm('Exit setup? You\'ll need to start over.')) {
+    stopCamera();
     window.location.href = 'https://mengotomars.com';
   }
 }
+
+// Kill the camera stream if the tab goes hidden; re-request when it comes back if user is on step 5
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopCamera();
+  else if (currentStep === 5 && !step5PhotoDone) startCamera();
+});
+window.addEventListener('beforeunload', stopCamera);
 
 updateUI();
 </script>
