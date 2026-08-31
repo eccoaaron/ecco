@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecco Demo Generator · Internal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141412;--ink-60:rgba(20,20,18,0.6);--ink-30:rgba(20,20,18,0.3);--ink-10:rgba(20,20,18,0.08);
+  --paper:#F7F4EE;--paper-2:#EDE9E1;--white:#FDFCFA;--gold:#C9A84C;--gold-dk:#8A6C28;--gold-lt:rgba(201,168,76,0.12);
+  --green:#3A8C4A;--red:#C0392B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+/* Header */
+header{background:var(--ink);color:var(--paper);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,0.06)}
+.logo{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:26px;letter-spacing:0.02em}
+.logo span{color:var(--gold);font-style:italic}
+.logo-sub{font-size:9px;font-weight:500;letter-spacing:0.16em;color:rgba(247,244,238,0.4);text-transform:uppercase;margin-top:2px}
+.header-tag{font-size:10px;font-weight:500;letter-spacing:0.14em;color:var(--gold);text-transform:uppercase;border:1px solid rgba(201,168,76,0.4);padding:5px 12px;border-radius:20px}
+
+/* Layout */
+.wrap{max-width:1240px;margin:0 auto;padding:32px;display:grid;grid-template-columns:1fr 420px;gap:24px}
+@media(max-width:980px){.wrap{grid-template-columns:1fr}}
+
+/* Cards */
+.card{background:var(--white);border:1px solid var(--ink-10);border-radius:6px;padding:28px;margin-bottom:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.card-eyebrow{font-size:10px;font-weight:600;letter-spacing:0.16em;color:var(--gold);text-transform:uppercase}
+.card-title{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:24px;color:var(--ink);letter-spacing:-0.01em;margin-bottom:6px}
+.card-sub{font-size:13px;color:var(--ink-60);line-height:1.6;margin-bottom:20px;font-weight:300}
+
+/* Form */
+.field{margin-bottom:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+label{display:block;font-size:11px;font-weight:600;color:var(--ink-60);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px}
+input[type=text],input[type=url],input[type=date],input[type=number],select,textarea{width:100%;background:var(--paper-2);border:1px solid var(--ink-10);border-radius:4px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:60px;line-height:1.5}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:34px}
+
+/* Color pickers */
+.color-field{display:flex;align-items:center;gap:10px}
+.color-swatch{width:38px;height:38px;border-radius:4px;border:1px solid var(--ink-10);cursor:pointer;flex-shrink:0;position:relative;overflow:hidden}
+.color-swatch input[type=color]{position:absolute;inset:-4px;border:none;cursor:pointer;opacity:0}
+.color-hex{flex:1;font-family:'DM Mono',monospace}
+
+/* URL fetcher row */
+.url-row{display:flex;gap:8px}
+.url-row input{flex:1}
+
+/* Screenshot drop zone */
+.screenshot-zone{border:1.5px dashed var(--ink-30);border-radius:8px;padding:36px 24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--paper-2)}
+.screenshot-zone:hover,.screenshot-zone.dragover{border-color:var(--gold);background:var(--gold-lt)}
+.screenshot-icon{color:var(--gold-dk);display:flex;justify-content:center;margin-bottom:10px}
+.screenshot-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.screenshot-sub{font-size:11px;color:var(--ink-60);font-weight:300}
+#screenshotPreview img{max-width:100%;max-height:240px;border-radius:6px;display:block;margin:0 auto 12px}
+.screenshot-actions{display:flex;gap:8px;justify-content:center}
+.extracted-colors{margin-top:14px;padding:14px;background:var(--paper-2);border-radius:6px}
+.extracted-label{font-size:11px;font-weight:600;letter-spacing:0.06em;color:var(--ink-60);text-transform:uppercase;margin-bottom:10px}
+.palette-row{display:flex;gap:6px;flex-wrap:wrap}
+.palette-chip{width:48px;height:48px;border-radius:4px;cursor:pointer;border:1px solid var(--ink-10);position:relative;transition:transform 0.15s}
+.palette-chip:hover{transform:scale(1.08)}
+.palette-chip-hex{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:9px;color:var(--ink-60);white-space:nowrap}
+.btn-secondary{background:transparent;border:1px solid var(--ink);color:var(--ink);padding:11px 18px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all 0.15s}
+.btn-secondary:hover{background:var(--ink);color:var(--paper)}
+.btn-secondary:disabled{opacity:0.5;cursor:wait}
+.fetch-result{font-size:12px;color:var(--ink-60);margin-top:8px;line-height:1.5;font-weight:300;display:none}
+.fetch-result.show{display:block}
+.fetch-result.success{color:var(--green)}
+.fetch-result.error{color:var(--red)}
+
+/* Tone selector */
+.tone-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tone-pill{padding:10px 14px;border:1px solid var(--ink-10);border-radius:6px;background:var(--paper-2);cursor:pointer;font-size:12px;text-align:center;transition:all 0.15s}
+.tone-pill.active{background:var(--gold);color:var(--white);border-color:var(--gold)}
+.tone-pill-title{font-weight:600;letter-spacing:0.02em;margin-bottom:2px}
+.tone-pill-desc{font-size:10px;opacity:0.8;font-weight:300}
+
+/* Template grid */
+.tmpl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tmpl-card{padding:14px 8px;border:1px solid var(--ink-10);border-radius:6px;background:var(--paper-2);cursor:pointer;text-align:center;transition:all 0.15s}
+.tmpl-card.active{background:var(--gold-lt);border-color:var(--gold);color:var(--ink)}
+.tmpl-card-icon{font-size:18px;margin-bottom:4px;color:var(--gold-dk)}
+.tmpl-card-label{font-size:11px;font-weight:600}
+
+/* Right column - preview & output */
+.preview-section{position:sticky;top:96px;align-self:flex-start}
+.preview-phone{background:var(--ink);border-radius:28px;padding:16px 12px;width:100%;max-width:340px;margin:0 auto 16px;box-shadow:0 24px 60px rgba(20,20,18,0.18)}
+.preview-screen{background:var(--bg,#0D0D0B);border-radius:18px;padding:24px 18px;min-height:480px;font-family:'DM Sans',sans-serif;color:white;position:relative;overflow:hidden}
+.preview-screen-bg{position:absolute;inset:0;border-radius:18px;opacity:0.06;background-image:radial-gradient(circle at 30% 20%,var(--prev-accent,#E8621A) 0%,transparent 50%)}
+.preview-brand{font-family:var(--prev-font-display,'Barlow Condensed'),sans-serif;font-weight:800;font-size:14px;letter-spacing:0.14em;text-transform:uppercase;color:var(--prev-text,white);margin-bottom:18px;text-align:center;position:relative;z-index:1}
+.preview-greeting{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:24px;line-height:1.15;letter-spacing:-0.01em;color:var(--prev-text,white);margin-bottom:8px;position:relative;z-index:1}
+.preview-greeting em{font-style:italic;color:var(--prev-accent,#E8621A)}
+.preview-sub{font-size:11px;color:rgba(255,255,255,0.55);line-height:1.6;font-weight:300;margin-bottom:18px;position:relative;z-index:1}
+.preview-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;position:relative;z-index:1;margin-bottom:10px}
+.preview-card-label{font-size:9px;font-weight:600;letter-spacing:0.14em;color:var(--prev-accent,#E8621A);text-transform:uppercase;margin-bottom:6px}
+.preview-card-streak{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:32px;color:var(--prev-text,white);line-height:1;letter-spacing:-0.02em}
+.preview-card-streak em{font-style:italic;color:var(--prev-accent,#E8621A)}
+.preview-card-streak-sub{font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px;font-weight:300}
+.preview-cta{background:var(--prev-accent,#E8621A);color:white;border-radius:20px;padding:11px;text-align:center;font-size:12px;font-weight:600;letter-spacing:0.04em;margin-top:14px;position:relative;z-index:1}
+.preview-reward{background:var(--prev-accent-dim,rgba(232,98,26,0.12));border:1px solid var(--prev-accent,#E8621A);border-radius:10px;padding:12px;position:relative;z-index:1;text-align:center;font-size:11px;font-weight:500;color:var(--prev-text,white)}
+.preview-reward em{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--prev-accent,#E8621A);font-size:14px}
+
+/* Generate button */
+.btn-primary{width:100%;background:var(--ink);color:var(--paper);border:none;border-radius:6px;padding:16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.btn-primary:hover{background:var(--gold)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Code output */
+.code-block{background:var(--ink);color:#E8C66A;font-family:'DM Mono',monospace;font-size:11px;line-height:1.6;padding:18px;border-radius:6px;max-height:280px;overflow:auto;white-space:pre;margin-bottom:10px}
+.copy-btn{background:transparent;border:1px solid var(--ink-30);color:var(--ink-60);padding:8px 14px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;width:100%;margin-bottom:6px}
+.copy-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.copy-btn.copied{background:var(--green);color:white;border-color:var(--green)}
+
+/* History */
+.history-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--ink-10);gap:12px}
+.history-item:last-child{border-bottom:none}
+.history-main{flex:1;min-width:0}
+.history-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.history-meta{font-size:11px;color:var(--ink-60);font-weight:300}
+.history-status{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+.history-status.active{background:rgba(58,140,74,0.12);color:var(--green)}
+.history-status.expired{background:rgba(192,57,43,0.12);color:var(--red)}
+.history-actions{display:flex;gap:6px}
+.history-btn{background:transparent;border:1px solid var(--ink-10);color:var(--ink-60);padding:5px 9px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:500;letter-spacing:0.04em}
+.history-btn:hover{background:var(--ink);color:var(--paper)}
+
+/* Empty state */
+.empty{text-align:center;padding:32px 16px;color:var(--ink-30);font-style:italic;font-size:13px;font-family:'Cormorant Garamond',serif}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:14px 22px;border-radius:24px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;letter-spacing:0.01em;box-shadow:0 4px 20px rgba(0,0,0,0.25);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--ink-10);margin-bottom:16px}
+.tab{padding:10px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-60);border-bottom:2px solid transparent;letter-spacing:0.04em;margin-bottom:-1px}
+.tab.active{color:var(--ink);border-bottom-color:var(--gold)}
+
+.divider{height:1px;background:var(--ink-10);margin:24px 0}
+.section-label{font-size:11px;font-weight:600;letter-spacing:0.12em;color:var(--gold-dk);text-transform:uppercase;margin-bottom:14px}
+.helper{font-size:11px;color:var(--ink-30);margin-top:6px;line-height:1.5;font-weight:300;font-style:italic}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">E<span>c</span>co <span style="color:var(--gold);font-style:italic;font-size:14px;letter-spacing:0.16em;margin-left:8px">/ generator</span></div>
+    <div class="logo-sub">Internal CRM · For Ecco use only</div>
+  </div>
+  <div class="header-tag">Patent Pending</div>
+</header>
+
+<div class="wrap">
+
+<!-- LEFT COLUMN: FORM -->
+<div>
+
+<!-- Card 1: Brand Source -->
+<div class="card">
+  <div class="card-eyebrow">Step 01 · Brand source</div>
+  <div class="card-title">Upload a screenshot.</div>
+  <div class="card-sub">Take a screenshot of the brand's homepage (Cmd+Shift+4 on Mac, Win+Shift+S on Windows) and drop it below. We'll auto-extract dominant colors. For tone of voice, use the Claude helper button.</div>
+
+  <div class="field">
+    <label>Brand website URL (for tracking)</label>
+    <input type="url" id="brandUrl" placeholder="https://mengotomars.com" autocomplete="off">
+    <div class="helper">Recorded for your records. Not used for fetching.</div>
+  </div>
+
+  <div class="field">
+    <label>Brand homepage screenshot</label>
+    <div class="screenshot-zone" id="screenshotZone">
+      <input type="file" id="screenshotInput" accept="image/*" style="display:none" onchange="handleScreenshot(event)">
+      <div id="screenshotEmpty">
+        <div class="screenshot-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <circle cx="12" cy="12" r="3.5"/>
+            <path d="M7 5l1.5-2h7L17 5"/>
+          </svg>
+        </div>
+        <div class="screenshot-title">Drop screenshot here or click to upload</div>
+        <div class="screenshot-sub">PNG or JPG. Anything under 10MB.</div>
+      </div>
+      <div id="screenshotPreview" style="display:none">
+        <img id="screenshotImage" alt="">
+        <div class="screenshot-actions">
+          <button class="btn-secondary" onclick="clearScreenshot()">Replace screenshot</button>
+        </div>
+      </div>
+    </div>
+    <div class="extracted-colors" id="extractedColors" style="display:none">
+      <div class="extracted-label">Dominant colors extracted — click to apply</div>
+      <div class="palette-row" id="paletteRow"></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Brand voice analysis</label>
+    <div style="background:var(--paper-2);border:1px solid var(--ink-10);border-radius:6px;padding:18px">
+      <div style="font-size:13px;color:var(--ink-60);line-height:1.6;font-weight:300;margin-bottom:14px">Copy the prompt below, open Claude in a new tab, paste it in along with the brand's homepage screenshot. Claude will analyze the brand voice — paste the response into "Custom voice notes" in Step 04.</div>
+
+      <div style="background:var(--white);border:1px solid var(--ink-10);border-radius:4px;padding:14px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:var(--gold-dk);text-transform:uppercase;margin-bottom:8px">Prompt — copy this</div>
+        <textarea id="claudePromptText" readonly style="width:100%;min-height:160px;border:none;background:transparent;font-family:'DM Mono',monospace;font-size:11px;line-height:1.6;color:var(--ink);resize:vertical;outline:none"></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-secondary" onclick="copyClaudePrompt(this)" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">Copy prompt</button>
+        <button class="btn-secondary" onclick="window.open('https://claude.ai/new', '_blank')">Open Claude in new tab →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Brand Identity -->
+<div class="card">
+  <div class="card-eyebrow">Step 02 · Brand identity</div>
+  <div class="card-title">What does the brand look like?</div>
+  <div class="card-sub">Override the fetched values or enter manually. Use the brand's actual hex codes from their marketing site or brand guidelines for the most accurate demo.</div>
+
+  <div class="field">
+    <label>Brand name</label>
+    <input type="text" id="brandName" placeholder="Mars Men" oninput="updatePreview()">
+  </div>
+
+  <div class="field">
+    <label>Tagline / brand voice line (optional)</label>
+    <input type="text" id="brandTagline" placeholder="Go to Mars" oninput="updatePreview()">
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Primary background</label>
+      <div class="color-field">
+        <div class="color-swatch" style="background:#0D0D0B" id="swPrimary">
+          <input type="color" id="primaryColor" value="#0D0D0B" oninput="updateColors()">
+        </div>
+        <input type="text" id="primaryHex" class="color-hex" value="#0D0D0B" oninput="syncColorFromHex('primary')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Accent / brand color</label>
+      <div class="color-field">
+        <div class="color-swatch" style="background:#E8621A" id="swAccent">
+          <input type="color" id="accentColor" value="#E8621A" oninput="updateColors()">
+        </div>
+        <input type="text" id="accentHex" class="color-hex" value="#E8621A" oninput="syncColorFromHex('accent')">
+      </div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Text color</label>
+      <div class="color-field">
+        <div class="color-swatch" style="background:#F2F0EB" id="swText">
+          <input type="color" id="textColor" value="#F2F0EB" oninput="updateColors()">
+        </div>
+        <input type="text" id="textHex" class="color-hex" value="#F2F0EB" oninput="syncColorFromHex('text')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Display font (Google Fonts)</label>
+      <select id="displayFont" onchange="updatePreview()">
+        <option value="Barlow Condensed">Barlow Condensed (default)</option>
+        <option value="Cormorant Garamond">Cormorant Garamond</option>
+        <option value="Playfair Display">Playfair Display</option>
+        <option value="Bebas Neue">Bebas Neue</option>
+        <option value="Anton">Anton</option>
+        <option value="Oswald">Oswald</option>
+        <option value="Inter">Inter</option>
+        <option value="Manrope">Manrope</option>
+        <option value="Space Grotesk">Space Grotesk</option>
+        <option value="Cardo">Cardo</option>
+        <option value="EB Garamond">EB Garamond</option>
+        <option value="Libre Caslon Text">Libre Caslon Text</option>
+        <option value="DM Serif Display">DM Serif Display</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Card 3: Program Configuration -->
+<div class="card">
+  <div class="card-eyebrow">Step 03 · The program</div>
+  <div class="card-title">What's the transformation?</div>
+  <div class="card-sub">The product, the program length, and the frame template that fits the visible change being documented.</div>
+
+  <div class="field">
+    <label>Product name</label>
+    <input type="text" id="productName" placeholder="Mars Men T-Boost" oninput="updatePreview()">
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Program length (days)</label>
+      <select id="programDays" onchange="updatePreview()">
+        <option value="30">30 days</option>
+        <option value="60">60 days</option>
+        <option value="90" selected>90 days</option>
+        <option value="120">120 days</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Current day (for the demo)</label>
+      <input type="number" id="currentDay" value="37" min="1" max="120" oninput="updatePreview()">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Frame template</label>
+    <div class="tmpl-grid">
+      <div class="tmpl-card active" data-tmpl="torso" onclick="selectTemplate('torso')">
+        <div class="tmpl-card-icon">●</div>
+        <div class="tmpl-card-label">Torso</div>
+      </div>
+      <div class="tmpl-card" data-tmpl="fullbody" onclick="selectTemplate('fullbody')">
+        <div class="tmpl-card-icon">▮</div>
+        <div class="tmpl-card-label">Full body</div>
+      </div>
+      <div class="tmpl-card" data-tmpl="face" onclick="selectTemplate('face')">
+        <div class="tmpl-card-icon">◐</div>
+        <div class="tmpl-card-label">Face</div>
+      </div>
+      <div class="tmpl-card" data-tmpl="smile" onclick="selectTemplate('smile')">
+        <div class="tmpl-card-icon">‿</div>
+        <div class="tmpl-card-label">Smile</div>
+      </div>
+      <div class="tmpl-card" data-tmpl="profile" onclick="selectTemplate('profile')">
+        <div class="tmpl-card-icon">◑</div>
+        <div class="tmpl-card-label">Profile</div>
+      </div>
+      <div class="tmpl-card" data-tmpl="scalp" onclick="selectTemplate('scalp')">
+        <div class="tmpl-card-icon">◯</div>
+        <div class="tmpl-card-label">Scalp</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Milestone reward (Day 30 or end of program)</label>
+    <input type="text" id="rewardText" placeholder="Next month free" value="Next month free" oninput="updatePreview()">
+  </div>
+</div>
+
+<!-- Card 4: Voice -->
+<div class="card">
+  <div class="card-eyebrow">Step 04 · Tone of voice</div>
+  <div class="card-title">How does the brand <em style="font-family:'Cormorant Garamond',serif;color:var(--gold)">speak</em>?</div>
+  <div class="card-sub">This shapes the copy across notifications, milestones, and the cancel flow. Pick the closest fit; we'll generate matching copy.</div>
+
+  <div class="field">
+    <div class="tone-grid">
+      <div class="tone-pill active" data-tone="hype" onclick="selectTone('hype')">
+        <div class="tone-pill-title">Hype / Hero</div>
+        <div class="tone-pill-desc">Bold, motivational, masculine</div>
+      </div>
+      <div class="tone-pill" data-tone="warm" onclick="selectTone('warm')">
+        <div class="tone-pill-title">Warm / Friendly</div>
+        <div class="tone-pill-desc">Encouraging, intimate, soft</div>
+      </div>
+      <div class="tone-pill" data-tone="clinical" onclick="selectTone('clinical')">
+        <div class="tone-pill-title">Clinical / Credible</div>
+        <div class="tone-pill-desc">Precise, restrained, scientific</div>
+      </div>
+      <div class="tone-pill" data-tone="luxury" onclick="selectTone('luxury')">
+        <div class="tone-pill-title">Luxury / Editorial</div>
+        <div class="tone-pill-desc">Refined, italic-serif, premium</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Custom voice notes (optional)</label>
+    <textarea id="voiceNotes" placeholder="e.g., 'Never uses fitness jargon. Inspired by classical literature. Addresses customer by first name.'"></textarea>
+  </div>
+</div>
+
+<!-- Card 5: Demo Tracking -->
+<div class="card">
+  <div class="card-eyebrow">Step 05 · Tracking</div>
+  <div class="card-title">Who's this for?</div>
+  <div class="card-sub">Identify the prospect so we can track engagement and expire the demo cleanly.</div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Prospect name (internal)</label>
+      <input type="text" id="prospectName" placeholder="Sarah Chen, CMO at Mars Men">
+    </div>
+    <div class="field">
+      <label>Demo expiry date</label>
+      <input type="date" id="expiryDate">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Demo URL slug</label>
+    <input type="text" id="urlSlug" placeholder="mars-men">
+    <div class="helper">Will be deployed at demo.eccoapp.ai/&lt;slug&gt; — auto-generated from brand name. Edit if needed.</div>
+  </div>
+</div>
+
+<!-- Generate -->
+<button class="btn-primary" onclick="generateDemo()">Generate demo configuration →</button>
+<div class="helper" style="text-align:center;margin-top:10px">Produces a BRAND config block. Paste into a fresh copy of ecco-app.html and deploy.</div>
+
+<div class="divider"></div>
+
+<!-- History -->
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-eyebrow">Demo history</div>
+      <div class="card-title">Past demos</div>
+    </div>
+  </div>
+  <div id="historyList">
+    <div class="empty">No demos generated yet.</div>
+  </div>
+</div>
+
+</div>
+
+<!-- RIGHT COLUMN: PREVIEW + OUTPUT -->
+<div class="preview-section">
+
+<!-- Phone preview -->
+<div class="card" style="background:var(--paper-2);padding:18px">
+  <div class="section-label" style="text-align:center;margin-bottom:14px">Live preview</div>
+  <div class="preview-phone">
+    <div class="preview-screen" id="previewScreen">
+      <div class="preview-screen-bg"></div>
+      <div class="preview-brand" id="prevBrand">Mars Men</div>
+      <div class="preview-greeting" id="prevGreeting">Time to go<br>to <em>Mars</em>, James.</div>
+      <div class="preview-sub" id="prevSub">Day 37 of your 90-day reset. You're nearly halfway there.</div>
+      <div class="preview-card">
+        <div class="preview-card-label">Current streak</div>
+        <div class="preview-card-streak">11 <em>days</em></div>
+        <div class="preview-card-streak-sub">Personal best: 14 days</div>
+      </div>
+      <div class="preview-reward">
+        Day 30 milestone<br><em id="prevReward">Next month free</em>
+      </div>
+      <div class="preview-cta" id="prevCta">Take today's photo →</div>
+    </div>
+  </div>
+  <div class="helper" style="text-align:center;margin-top:6px">Updates as you edit. Visual approximation only.</div>
+</div>
+
+<!-- Config output -->
+<div class="card" id="outputCard" style="display:none">
+  <div class="card-eyebrow">Generated configuration</div>
+  <div class="card-title">Ready to ship</div>
+  <div class="card-sub">Replace the BRAND object at the top of ecco-app.html with this. Save, push to a new GitHub repo for this demo, deploy to Vercel under the URL slug.</div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchOutputTab('config',this)">BRAND config</div>
+    <div class="tab" onclick="switchOutputTab('instructions',this)">Deploy steps</div>
+  </div>
+
+  <div id="outConfig">
+    <div class="code-block" id="configOutput"></div>
+    <button class="copy-btn" onclick="copyOutput('configOutput',this)">Copy BRAND config</button>
+  </div>
+
+  <div id="outInstructions" style="display:none">
+    <div style="font-size:13px;color:var(--ink-60);line-height:1.7;font-weight:300">
+      <ol style="margin-left:18px">
+        <li style="margin-bottom:8px"><strong>Copy</strong> the BRAND config above.</li>
+        <li style="margin-bottom:8px"><strong>Open</strong> your local copy of <code style="font-family:'DM Mono',monospace;background:var(--paper-2);padding:2px 6px;border-radius:3px">ecco-app.html</code>.</li>
+        <li style="margin-bottom:8px"><strong>Find</strong> the existing <code style="font-family:'DM Mono',monospace;background:var(--paper-2);padding:2px 6px;border-radius:3px">const BRAND = {</code> block near the top of the &lt;script&gt; section.</li>
+        <li style="margin-bottom:8px"><strong>Replace</strong> it with the generated config. Save as <code style="font-family:'DM Mono',monospace;background:var(--paper-2);padding:2px 6px;border-radius:3px">index.html</code>.</li>
+        <li style="margin-bottom:8px"><strong>Create</strong> a new GitHub repo named <code style="font-family:'DM Mono',monospace;background:var(--paper-2);padding:2px 6px;border-radius:3px" id="repoName">ecco-demo-mars-men</code> and upload the file.</li>
+        <li style="margin-bottom:8px"><strong>Import</strong> the repo into Vercel as a new project.</li>
+        <li style="margin-bottom:8px"><strong>Add the custom domain</strong> <code style="font-family:'DM Mono',monospace;background:var(--paper-2);padding:2px 6px;border-radius:3px" id="customDomain">mars-men.demo.eccoapp.ai</code> in Vercel's domains settings, then add the CNAME record in Cloudflare.</li>
+        <li style="margin-bottom:8px"><strong>Send</strong> the URL to the prospect 48 hours before the meeting.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ──────────────────────────────────────────────
+const STORAGE = 'ecco_demos_history';
+let currentTemplate = 'torso';
+let currentTone = 'hype';
+
+// Tone library — drives copy generation
+const TONE_LIBRARY = {
+  hype: {
+    timeMorning: 'Good morning',
+    timeEvening: 'Evening',
+    greetingFmt: 'Time to go<br>to <em>$ANCHOR$</em>, $NAME$.',
+    streakLabel: 'streak',
+    streakWarning: 'Don\'t break it.',
+    submitCta: 'Take today\'s photo →',
+    notif: 'Day $DAY$. Heads down. Get after it.',
+    cancelHeadline: 'Wait — before you go.',
+    cancelSub: 'Tell us why. We\'ll make it right.',
+    anchorWord: 'Mars'
+  },
+  warm: {
+    timeMorning: 'Good morning',
+    timeEvening: 'Evening',
+    greetingFmt: 'Let\'s show up<br>today, <em>$NAME$</em>.',
+    streakLabel: 'days strong',
+    streakWarning: 'You\'re doing this.',
+    submitCta: 'Capture today\'s moment →',
+    notif: 'Day $DAY$. We\'re right here with you.',
+    cancelHeadline: 'Before you go —',
+    cancelSub: 'We hear you. Let\'s find what works.',
+    anchorWord: 'work'
+  },
+  clinical: {
+    timeMorning: 'Morning',
+    timeEvening: 'Evening',
+    greetingFmt: 'Day $DAY$ check-in.<br>Hello, <em>$NAME$</em>.',
+    streakLabel: 'consecutive days',
+    streakWarning: 'Maintain consistency.',
+    submitCta: 'Submit progress photo',
+    notif: 'Day $DAY$ check-in due. Consistency drives outcomes.',
+    cancelHeadline: 'Before cancellation —',
+    cancelSub: 'A short diagnostic to find the right adjustment.',
+    anchorWord: 'work'
+  },
+  luxury: {
+    timeMorning: 'Good morning',
+    timeEvening: 'Good evening',
+    greetingFmt: 'A new day,<br><em>$NAME$</em>.',
+    streakLabel: 'days',
+    streakWarning: 'Quietly, every day.',
+    submitCta: 'Today\'s capture →',
+    notif: 'Day $DAY$. A quiet moment with $BRAND$.',
+    cancelHeadline: 'A moment, please.',
+    cancelSub: 'Before parting ways, may we ask one question?',
+    anchorWord: 'transform'
+  }
+};
+
+// ─── INITIAL DEFAULTS ───────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Default expiry: 14 days from now
+  const expiry = new Date();
+  expiry.setDate(expiry.getDate() + 14);
+  document.getElementById('expiryDate').value = expiry.toISOString().split('T')[0];
+
+  // Default values for fast demo
+  document.getElementById('brandName').value = 'Mars Men';
+  document.getElementById('brandTagline').value = 'Go to Mars';
+  document.getElementById('productName').value = 'Mars Men T-Boost';
+  document.getElementById('urlSlug').value = 'mars-men';
+  document.getElementById('prospectName').value = '';
+
+  updatePreview();
+  renderHistory();
+  // Auto-slug as brand name changes
+  document.getElementById('brandName').addEventListener('input', () => {
+    const v = document.getElementById('brandName').value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    document.getElementById('urlSlug').value = v;
+  });
+});
+
+// ─── COLOR PICKER SYNC ──────────────────────────────────
+function syncColorFromHex(which) {
+  const hex = document.getElementById(which+'Hex').value;
+  if (/^#[0-9A-F]{6}$/i.test(hex)) {
+    document.getElementById(which+'Color').value = hex;
+    updateColors();
+  }
+}
+function updateColors() {
+  const p = document.getElementById('primaryColor').value;
+  const a = document.getElementById('accentColor').value;
+  const t = document.getElementById('textColor').value;
+  document.getElementById('primaryHex').value = p.toUpperCase();
+  document.getElementById('accentHex').value = a.toUpperCase();
+  document.getElementById('textHex').value = t.toUpperCase();
+  document.getElementById('swPrimary').style.background = p;
+  document.getElementById('swAccent').style.background = a;
+  document.getElementById('swText').style.background = t;
+  updatePreview();
+}
+
+// ─── TEMPLATE & TONE SELECT ─────────────────────────────
+function selectTemplate(t) {
+  currentTemplate = t;
+  document.querySelectorAll('.tmpl-card').forEach(c => c.classList.toggle('active', c.dataset.tmpl === t));
+  updatePreview();
+}
+function selectTone(t) {
+  currentTone = t;
+  document.querySelectorAll('.tone-pill').forEach(p => p.classList.toggle('active', p.dataset.tone === t));
+  updatePreview();
+}
+
+// ─── PREVIEW ────────────────────────────────────────────
+function updatePreview() {
+  const brand = document.getElementById('brandName').value || 'Brand';
+  const product = document.getElementById('productName').value || 'their product';
+  const days = document.getElementById('programDays').value;
+  const cur = document.getElementById('currentDay').value;
+  const reward = document.getElementById('rewardText').value || 'A milestone reward';
+  const tagline = document.getElementById('brandTagline').value;
+  const accent = document.getElementById('accentColor').value;
+  const primary = document.getElementById('primaryColor').value;
+  const text = document.getElementById('textColor').value;
+  const font = document.getElementById('displayFont').value;
+  const tone = TONE_LIBRARY[currentTone];
+  const anchor = tagline ? (tagline.split(' ').pop() || tone.anchorWord) : tone.anchorWord;
+
+  const screen = document.getElementById('previewScreen');
+  screen.style.setProperty('--prev-accent', accent);
+  screen.style.setProperty('--prev-text', text);
+  screen.style.setProperty('--prev-font-display', font);
+  screen.style.setProperty('--prev-accent-dim', accent + '1F');
+  // Use input primary as the screen background
+  screen.style.background = primary;
+
+  document.getElementById('prevBrand').textContent = brand;
+  let greeting = tone.greetingFmt
+    .replace('$NAME$', 'James')
+    .replace('$ANCHOR$', anchor)
+    .replace('$DAY$', cur);
+  document.getElementById('prevGreeting').innerHTML = greeting;
+  document.getElementById('prevSub').textContent = `Day ${cur} of your ${days}-day program with ${product}.`;
+  document.getElementById('prevReward').textContent = reward;
+  document.getElementById('prevCta').innerHTML = tone.submitCta;
+}
+
+// ─── SCREENSHOT UPLOAD & COLOR EXTRACTION ──────────────
+function handleScreenshot(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  loadScreenshotFile(file);
+}
+
+function loadScreenshotFile(file) {
+  if (!file.type.startsWith('image/')) {
+    showToast('Please upload an image file');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      document.getElementById('screenshotImage').src = e.target.result;
+      document.getElementById('screenshotEmpty').style.display = 'none';
+      document.getElementById('screenshotPreview').style.display = 'block';
+      extractDominantColors(img);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearScreenshot() {
+  document.getElementById('screenshotInput').value = '';
+  document.getElementById('screenshotEmpty').style.display = 'block';
+  document.getElementById('screenshotPreview').style.display = 'none';
+  document.getElementById('extractedColors').style.display = 'none';
+}
+
+function extractDominantColors(img) {
+  // Use canvas to sample colors, then quantize via simple histogram
+  const canvas = document.createElement('canvas');
+  const W = 200, H = Math.round((img.height / img.width) * 200);
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, W, H);
+  const data = ctx.getImageData(0, 0, W, H).data;
+
+  // Bucket colors into a coarse histogram (16 levels per channel)
+  const buckets = {};
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+    if (a < 128) continue;
+    // Skip near-white and near-black (usually background or text)
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    const lum = 0.299*r + 0.587*g + 0.114*b;
+    if (lum > 240 || lum < 15) continue;
+    // Quantize
+    const rq = Math.round(r/16)*16, gq = Math.round(g/16)*16, bq = Math.round(b/16)*16;
+    const key = `${rq},${gq},${bq}`;
+    buckets[key] = (buckets[key] || 0) + 1;
+  }
+
+  // Sort by count and take top 8
+  const sorted = Object.entries(buckets)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 24);
+
+  // De-duplicate similar colors (Euclidean distance threshold)
+  const palette = [];
+  for (const [key, count] of sorted) {
+    const [r, g, b] = key.split(',').map(Number);
+    let tooSimilar = false;
+    for (const c of palette) {
+      const dist = Math.sqrt((c.r-r)**2 + (c.g-g)**2 + (c.b-b)**2);
+      if (dist < 40) { tooSimilar = true; break; }
+    }
+    if (!tooSimilar) palette.push({ r, g, b, count });
+    if (palette.length >= 6) break;
+  }
+
+  // Render palette chips
+  const row = document.getElementById('paletteRow');
+  row.innerHTML = '';
+  palette.forEach(c => {
+    const hex = '#' + [c.r, c.g, c.b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+    const chip = document.createElement('div');
+    chip.className = 'palette-chip';
+    chip.style.background = hex;
+    chip.title = `Click to apply ${hex}`;
+    chip.innerHTML = `<div class="palette-chip-hex">${hex}</div>`;
+    chip.onclick = () => applyExtractedColor(hex);
+    row.appendChild(chip);
+  });
+  document.getElementById('extractedColors').style.display = 'block';
+  showToast('Click any color to apply as accent. Long-press the chip to choose primary/text.');
+}
+
+function applyExtractedColor(hex) {
+  // Single-click applies to accent (most useful default)
+  document.getElementById('accentColor').value = hex;
+  updateColors();
+  showToast('Applied as accent. To set as background or text, edit the swatches manually.');
+}
+
+// Drag-and-drop support on the zone
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('screenshotZone');
+  if (zone) {
+    zone.addEventListener('click', () => document.getElementById('screenshotInput').click());
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) loadScreenshotFile(file);
+    });
+  }
+});
+
+// ─── CLAUDE PROMPT HELPER ──────────────────────────────
+function buildClaudePrompt() {
+  const brand = document.getElementById('brandName').value.trim() || '[brand name]';
+  const url = document.getElementById('brandUrl').value.trim() || '[brand URL]';
+  return `I'm building a branded customer experience that needs to match a specific brand's voice. I'm attaching a screenshot of their homepage.
+
+Brand: ${brand}
+URL: ${url}
+
+Please analyze the attached screenshot and tell me:
+
+1. **Brand voice in 2 sentences** — How does this brand speak? Formal / casual / clinical / luxury / hype?
+
+2. **Three signature phrases or terms** that capture how the brand talks about itself.
+
+3. **Recommended tone preset** — pick ONE of: Hype/Hero, Warm/Friendly, Clinical/Credible, Luxury/Editorial.
+
+4. **One sample notification** the brand might send a customer at Day 30 of using their product, written in their voice.
+
+5. **Display font** — what typeface does the brand use for headlines? Match to a Google Font.
+
+Keep the output concise and copyable — I'll paste it into a configuration form.`;
+}
+
+function refreshClaudePrompt() {
+  const ta = document.getElementById('claudePromptText');
+  if (ta) ta.value = buildClaudePrompt();
+}
+
+function copyClaudePrompt(btn) {
+  const text = buildClaudePrompt();
+  const ta = document.getElementById('claudePromptText');
+  if (ta) ta.value = text;
+
+  // Try the modern clipboard API first
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      flashCopied(btn);
+    }).catch(() => {
+      // Fallback: select the textarea so user can manually copy
+      selectAndManualCopy(ta, btn);
+    });
+  } else {
+    selectAndManualCopy(ta, btn);
+  }
+}
+
+function selectAndManualCopy(ta, btn) {
+  if (!ta) return;
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  try {
+    const ok = document.execCommand('copy');
+    if (ok) flashCopied(btn);
+    else showToast('Press Cmd+C / Ctrl+C to copy the highlighted text');
+  } catch(e) {
+    showToast('Press Cmd+C / Ctrl+C to copy the highlighted text');
+  }
+}
+
+function flashCopied(btn) {
+  if (!btn) { showToast('Prompt copied'); return; }
+  const original = btn.textContent;
+  btn.textContent = '✓ Copied';
+  btn.style.background = 'var(--green, #3A8C4A)';
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.style.background = 'var(--ink)';
+  }, 1600);
+}
+
+// Keep prompt in sync as brand name and URL change
+document.addEventListener('DOMContentLoaded', () => {
+  refreshClaudePrompt();
+  const bn = document.getElementById('brandName');
+  const bu = document.getElementById('brandUrl');
+  if (bn) bn.addEventListener('input', refreshClaudePrompt);
+  if (bu) bu.addEventListener('input', refreshClaudePrompt);
+});
+
+// ─── GENERATE DEMO ──────────────────────────────────────
+function generateDemo() {
+  const brand = document.getElementById('brandName').value.trim();
+  const slug = document.getElementById('urlSlug').value.trim();
+  if (!brand || !slug) {
+    showToast('Brand name and URL slug are required');
+    return;
+  }
+
+  const config = buildBrandConfig();
+  const configStr = formatBrandConfig(config);
+  document.getElementById('configOutput').textContent = configStr;
+  document.getElementById('repoName').textContent = 'ecco-demo-' + slug;
+  document.getElementById('customDomain').textContent = slug + '.demo.eccoapp.ai';
+  document.getElementById('outputCard').style.display = 'block';
+  document.getElementById('outputCard').scrollIntoView({behavior:'smooth',block:'start'});
+
+  // Save to history
+  saveToHistory(config);
+}
+
+function buildBrandConfig() {
+  const tone = TONE_LIBRARY[currentTone];
+  return {
+    name: document.getElementById('brandName').value.trim(),
+    tagline: document.getElementById('brandTagline').value.trim(),
+    product: document.getElementById('productName').value.trim(),
+    programDays: parseInt(document.getElementById('programDays').value),
+    currentDay: parseInt(document.getElementById('currentDay').value),
+    cameraFrame: currentTemplate,
+    reward: document.getElementById('rewardText').value.trim(),
+    tone: currentTone,
+    voiceNotes: document.getElementById('voiceNotes').value.trim(),
+    colors: {
+      bg: document.getElementById('primaryColor').value.toUpperCase(),
+      accent: document.getElementById('accentColor').value.toUpperCase(),
+      text: document.getElementById('textColor').value.toUpperCase()
+    },
+    fonts: {
+      display: document.getElementById('displayFont').value
+    },
+    copy: {
+      greeting: tone.greetingFmt.replace('$NAME$', 'James').replace('$ANCHOR$', (document.getElementById('brandTagline').value.split(' ').pop() || tone.anchorWord)),
+      submitCta: tone.submitCta,
+      notif: tone.notif,
+      cancelHeadline: tone.cancelHeadline,
+      cancelSub: tone.cancelSub,
+      streakLabel: tone.streakLabel
+    },
+    prospect: document.getElementById('prospectName').value.trim(),
+    slug: document.getElementById('urlSlug').value.trim(),
+    expiry: document.getElementById('expiryDate').value,
+    generated: new Date().toISOString()
+  };
+}
+
+function formatBrandConfig(c) {
+  return `const BRAND = {
+  // Auto-generated by Ecco Demo Generator on ${new Date().toLocaleString()}
+  // Prospect: ${c.prospect || '(unspecified)'}
+  // Demo URL: ${c.slug}.demo.eccoapp.ai
+  // Expires: ${c.expiry}
+  
+  name: ${JSON.stringify(c.name)},
+  tagline: ${JSON.stringify(c.tagline)},
+  product: ${JSON.stringify(c.product)},
+  programDays: ${c.programDays},
+  currentDay: ${c.currentDay},
+  cameraFrame: ${JSON.stringify(c.cameraFrame)},
+  reward: ${JSON.stringify(c.reward)},
+  tone: ${JSON.stringify(c.tone)},
+  voiceNotes: ${JSON.stringify(c.voiceNotes)},
+
+  colors: {
+    bg:     ${JSON.stringify(c.colors.bg)},
+    accent: ${JSON.stringify(c.colors.accent)},
+    text:   ${JSON.stringify(c.colors.text)}
+  },
+
+  fonts: {
+    display: ${JSON.stringify(c.fonts.display)}
+  },
+
+  copy: {
+    greeting:        ${JSON.stringify(c.copy.greeting)},
+    submitCta:       ${JSON.stringify(c.copy.submitCta)},
+    notif:           ${JSON.stringify(c.copy.notif)},
+    cancelHeadline:  ${JSON.stringify(c.copy.cancelHeadline)},
+    cancelSub:       ${JSON.stringify(c.copy.cancelSub)},
+    streakLabel:     ${JSON.stringify(c.copy.streakLabel)}
+  },
+
+  // Frame validation config (preserved from base template)
+  frameValidation: {
+    torso:    { label: 'Center torso in frame',    facing: 'environment' },
+    fullbody: { label: 'Full body, head to toe',   facing: 'environment' },
+    face:     { label: 'Face centered in frame',   facing: 'user' },
+    smile:    { label: 'Smile showing teeth',      facing: 'user' },
+    profile:  { label: 'Side profile, ear visible',facing: 'environment' },
+    scalp:    { label: 'Top of head, scalp visible',facing:'user'}
+  }
+};`;
+}
+
+function copyOutput(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy BRAND config';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => showToast('Could not copy — select manually'));
+}
+
+function switchOutputTab(which, el) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('outConfig').style.display = which === 'config' ? 'block' : 'none';
+  document.getElementById('outInstructions').style.display = which === 'instructions' ? 'block' : 'none';
+}
+
+// ─── HISTORY ────────────────────────────────────────────
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE) || '[]'); }
+  catch(e) { return []; }
+}
+function saveToHistory(config) {
+  const list = loadHistory();
+  // Prevent duplicates with same slug — replace
+  const existingIdx = list.findIndex(d => d.slug === config.slug);
+  if (existingIdx >= 0) list[existingIdx] = config;
+  else list.unshift(config);
+  // Keep latest 50
+  try { localStorage.setItem(STORAGE, JSON.stringify(list.slice(0, 50))); } catch(e) {}
+  renderHistory();
+  showToast('Demo configuration saved to history');
+}
+
+function renderHistory() {
+  const list = loadHistory();
+  const c = document.getElementById('historyList');
+  if (!list.length) {
+    c.innerHTML = '<div class="empty">No demos generated yet.</div>';
+    return;
+  }
+  c.innerHTML = list.map(d => {
+    const expiry = new Date(d.expiry);
+    const isExpired = expiry < new Date();
+    const status = isExpired ? 'expired' : 'active';
+    return `<div class="history-item">
+      <div class="history-main">
+        <div class="history-title">${escapeHtml(d.name)} <span style="color:var(--ink-30);font-weight:300">/ ${escapeHtml(d.prospect || 'no prospect')}</span></div>
+        <div class="history-meta">${d.slug}.demo.eccoapp.ai · expires ${d.expiry}</div>
+      </div>
+      <span class="history-status ${status}">${status}</span>
+      <div class="history-actions">
+        <button class="history-btn" onclick='loadConfig(${JSON.stringify(d.slug)})'>Load</button>
+        <button class="history-btn" onclick='deleteConfig(${JSON.stringify(d.slug)})'>Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadConfig(slug) {
+  const list = loadHistory();
+  const d = list.find(x => x.slug === slug);
+  if (!d) return;
+  document.getElementById('brandName').value = d.name;
+  document.getElementById('brandTagline').value = d.tagline || '';
+  document.getElementById('productName').value = d.product;
+  document.getElementById('programDays').value = d.programDays;
+  document.getElementById('currentDay').value = d.currentDay;
+  document.getElementById('rewardText').value = d.reward;
+  document.getElementById('voiceNotes').value = d.voiceNotes || '';
+  document.getElementById('primaryColor').value = d.colors.bg;
+  document.getElementById('accentColor').value = d.colors.accent;
+  document.getElementById('textColor').value = d.colors.text;
+  document.getElementById('displayFont').value = d.fonts.display;
+  document.getElementById('urlSlug').value = d.slug;
+  document.getElementById('prospectName').value = d.prospect || '';
+  document.getElementById('expiryDate').value = d.expiry;
+  selectTemplate(d.cameraFrame);
+  selectTone(d.tone);
+  updateColors();
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast(`Loaded "${d.name}" — edit and regenerate`);
+}
+
+function deleteConfig(slug) {
+  if (!confirm('Delete this demo from history?')) return;
+  const list = loadHistory().filter(d => d.slug !== slug);
+  try { localStorage.setItem(STORAGE, JSON.stringify(list)); } catch(e) {}
+  renderHistory();
+  showToast('Deleted');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>
