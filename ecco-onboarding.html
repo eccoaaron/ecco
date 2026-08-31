@@ -505,13 +505,13 @@ async function startCamera() {
   try {
     let stream;
     try {
-      // Prefer back camera on mobile — user props phone up and steps back for a torso shot
+      // Prefer front camera — user takes selfie-style baseline photo
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' } },
+        video: { facingMode: { ideal: 'user' } },
         audio: false
       });
     } catch (e) {
-      // Fall back to whatever camera is available (desktop webcam, front-only devices)
+      // Fall back to whatever camera is available
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     }
     cameraStream = stream;
